@@ -58,28 +58,28 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
-import { readFile } from 'fs';
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access*/
+
+// import { useFileHandler } from 'app/src-electron/filehandler';
+import { defineComponent, ref, onMounted } from 'vue';
+import { CustomWindow } from 'src/models/custom-window';
+
+declare let window: CustomWindow;
 
 export default defineComponent({
   name: 'MainLayout',
 
-  async setup() {
+  setup() {
     const leftDrawerOpen = ref(false);
 
-
-    // readFile("./")
-
-    const loadWeather = async () => {
-      return fetch('weather.json');
-    };
-
-    try {
-      const test = await loadWeather();
-      console.log(test);
-    } catch (error) {
-      console.log(error);
-    }
+    onMounted(async () => {
+      // here we need to load the configuration file and also date existing files
+      const file = (await window?.fileHandler.readFile(
+        'C:/Development/git_repository/timekeeping/weather.json'
+      )) as JSON;
+      console.log(file);
+    });
 
     return {
       leftDrawerOpen,
