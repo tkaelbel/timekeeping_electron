@@ -1,10 +1,37 @@
 [
   {
-    "test": "12",
-    "warm": 12
-  },
-  {
-    "test": "123",
-    "warm": 123
+    "year": 2022,
+    "month": [
+      {
+        "january": {
+          "cw": [
+            {
+              "52": {
+                "saturday": 5,
+                "sunday": 6
+              },
+              "1": {
+                "monday": 2,
+                "tuesday": 3
+              }
+            }
+          ]
+        },
+        "february": {
+          "cw": [
+            {
+              "5": {
+                "saturday": 5,
+                "sunday": 6
+              },
+              "6": {
+                "monday": 2,
+                "tuesday": 3
+              }
+            }
+          ]
+        }
+      }
+    ]
   }
 ]

@@ -10,6 +10,10 @@ const routes: RouteRecordRaw[] = [
         path: 'configuration',
         component: () => import('pages/Configuration.vue'),
       },
+      {
+        path: 'timecalculator',
+        component: () => import('pages/TimeCalculator.vue'),
+      },
     ],
   },
 

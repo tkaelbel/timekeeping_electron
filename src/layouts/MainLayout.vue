@@ -26,6 +26,12 @@
 
         <div class="gt-sm">
           <q-btn flat icon="schedule" label="Timekeeping" to="/" />
+          <q-btn
+            flat
+            icon="calculate"
+            label="Time-Calculator"
+            to="/timecalculator"
+          />
           <q-btn flat icon="build" label="Configuration" to="/configuration" />
         </div>
       </q-toolbar>
@@ -38,6 +44,13 @@
             <q-icon name="schedule" size="25px" />
           </q-item-section>
           <q-item-section>TIMEKEEPING</q-item-section>
+        </q-item>
+
+        <q-item clickable to="/timecalculator">
+          <q-item-section avatar>
+            <q-icon name="calculate" size="25px" />
+          </q-item-section>
+          <q-item-section>TIME-CALCULATOR</q-item-section>
         </q-item>
 
         <q-item clickable to="/configuration">
@@ -61,9 +74,10 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access*/
 
-// import { useFileHandler } from 'app/src-electron/filehandler';
 import { defineComponent, ref, onMounted } from 'vue';
 import { CustomWindow } from 'src/models/custom-window';
+import { useConfigurationStore } from 'src/store/store';
+import { IConfigurationStore } from 'src/models/store-model';
 
 declare let window: CustomWindow;
 
@@ -73,12 +87,29 @@ export default defineComponent({
   setup() {
     const leftDrawerOpen = ref(false);
 
+    const configurationStore = useConfigurationStore();
+
     onMounted(async () => {
       // here we need to load the configuration file and also date existing files
-      const file = (await window?.fileHandler.readFile(
-        'C:/Development/git_repository/timekeeping/weather.json'
-      )) as JSON;
-      console.log(file);
+      try {
+        const file = (await window?.fileHandler.readFile(
+          './configuration.json'
+        )) as string;
+
+        console.debug('Loaded configuration.json successfully');
+        console.log(file);
+
+        // set configuration state
+        const { yearlyVacationDays, weeklyHoursWorking } = JSON.parse(
+          file
+        ) as IConfigurationStore;
+        configurationStore.yearlyVacationDays = yearlyVacationDays;
+        configurationStore.weeklyHoursWorking = weeklyHoursWorking;
+      } catch (error) {
+        console.error(
+          'Could not load configuration.json. Defaults will be used'
+        );
+      }
     });
 
     return {

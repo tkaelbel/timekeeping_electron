@@ -5,7 +5,7 @@
         <q-input
           type="text"
           filled
-          v-model="weeklyHoursWorking"
+          v-model="store.weeklyHoursWorking"
           label="Weekly working hours"
           style="width: 250px; padding-bottom: 32px"
           mask="###"
@@ -14,7 +14,7 @@
         <q-input
           type="text"
           filled
-          v-model="yearlyVacationDays"
+          v-model="store.yearlyVacationDays"
           label="Yearly vacation days"
           style="width: 250px; padding-bottom: 32px"
           mask="###"
@@ -34,21 +34,20 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
+import { useConfigurationStore } from "src/store/store";
+import { defineComponent, ref } from "vue";
 
 export default defineComponent({
-  name: 'Configuration',
+  name: "Configuration",
   setup() {
-    const weeklyHoursWorking = ref<number>();
-    const yearlyVacationDays = ref<number>();
+    const store = useConfigurationStore();
 
     const onApply = () => {
-      console.log('hello');
+      console.log("hello");
     };
 
     return {
-      weeklyHoursWorking,
-      yearlyVacationDays,
+      store,
       onApply,
     };
   },
