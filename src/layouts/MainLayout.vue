@@ -74,62 +74,56 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access*/
 
-import { defineComponent, ref, onMounted } from 'vue';
+import { defineComponent, ref } from 'vue';
 import { CustomWindow } from 'src/models/custom-window';
 import { useConfigurationStore, useTimekeepingStore } from 'src/store/store';
 import { IConfigurationStore } from 'src/models/store-model';
-import { IOutputModel } from 'src/models/month-model';
+import { IData } from 'src/models/month-model';
 
 declare const window: CustomWindow;
 
 export default defineComponent({
   name: 'MainLayout',
 
-  setup() {
+  async setup() {
     const leftDrawerOpen = ref(false);
 
     const configurationStore = useConfigurationStore();
     const timekeeperStore = useTimekeepingStore();
 
-    onMounted(async () => {
-      // here we need to load the configuration file and also date existing files
-      try {
-        const file = (await window?.fileHandler.readFile(
-          './configuration.json'
-        )) as string;
+    // here we need to load the configuration file and also date existing files
+    try {
+      const file = (await window?.fileHandler.readFile(
+        './configuration.json'
+      )) as string;
 
-        console.debug('Loaded configuration.json successfully');
-        console.log(file);
+      console.debug('Loaded configuration.json successfully');
+      console.log(file);
 
-        // set configuration state
-        const { yearlyVacationDays, weeklyHoursWorking } = JSON.parse(
-          file
-        ) as IConfigurationStore;
-        configurationStore.yearlyVacationDays = yearlyVacationDays;
-        configurationStore.weeklyHoursWorking = weeklyHoursWorking;
-      } catch (error) {
-        console.error(
-          'Could not load configuration.json. Defaults will be used'
-        );
-      }
+      // set configuration state
+      const { yearlyVacationDays, weeklyHoursWorking } = JSON.parse(
+        file
+      ) as IConfigurationStore;
+      configurationStore.yearlyVacationDays = yearlyVacationDays;
+      configurationStore.weeklyHoursWorking = weeklyHoursWorking;
+    } catch (error) {
+      console.error('Could not load configuration.json. Defaults will be used');
+    }
 
-      try {
-        const file = (await window?.fileHandler.readFile(
-          './data.json'
-        )) as string;
+    try {
+      const file = (await window?.fileHandler.readFile(
+        './data.json'
+      )) as string;
 
-        console.debug('Loaded data.json successfully');
-        console.log(file);
+      console.debug('Loaded data.json successfully');
+      console.log(file);
 
-        // set configuration state
-        const data = JSON.parse(file) as IOutputModel;
-        timekeeperStore.days = data;
-      } catch (error) {
-        console.error(
-          'Could not load configuration.json. Defaults will be used'
-        );
-      }
-    });
+      // set configuration state
+      const data = JSON.parse(file) as IData;
+      timekeeperStore.data = data;
+    } catch (error) {
+      console.error('Could not load configuration.json. Defaults will be used');
+    }
 
     return {
       leftDrawerOpen,

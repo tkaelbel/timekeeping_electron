@@ -25,7 +25,36 @@ export const useConfigurationStore = defineStore('configurationStore', {
 export const useTimekeepingStore = defineStore('timekeepingStore', {
   state: () =>
     ({
-    currentDate: new Date(),
-    days: undefined
-  } as unknown as ITimekeeperStore),
+      currentDate: new Date(),
+      data: {},
+    } as ITimekeeperStore),
+  getters: {
+    getOverallOvertimeHours() {
+      const weeklyHours = useConfigurationStore().weeklyHoursWorking;
+      const years = Object.keys(this.data);
+
+      let overtimeHours = 0;
+      let weeks: { [key: number]: number } = {};
+
+      years.forEach((year: string) => {
+        const months = this.data[year as unknown as number];
+        Object.keys(months).forEach((month: string) => {
+          const cws = months[month];
+          Object.keys(cws).forEach((cw: string) => {
+            const days = cws[cw as unknown as number];
+            Object.keys(days).forEach((day: string) => {
+              const dayObj = days[day];
+
+              overtimeHours = overtimeHours + dayObj.hours;
+              if (dayObj.hours > 0) {
+                weeks[cw as unknown as number] = 1;
+              }
+            });
+          });
+        });
+      });
+
+      return overtimeHours;
+    },
+  },
 });

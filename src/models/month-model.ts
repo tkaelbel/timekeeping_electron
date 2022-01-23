@@ -21,7 +21,7 @@ export interface IDayModel {
   hours: number;
 }
 
-export interface IOutputModel {
+export interface IWeek {
   [key: number]: {
     [key: string]: IDayModel;
   };
@@ -34,10 +34,9 @@ export interface IInputModel {
 }
 
 export interface IData {
-  year: number;
-  months: IOutputMonth;
+  [key: number]: IMonth;
 }
 
-interface IOutputMonth {
-  [key: string]: IOutputModel;
+interface IMonth {
+  [key: string]: IWeek;
 }

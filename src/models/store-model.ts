@@ -1,8 +1,8 @@
-import { IWeekModel, IOutputModel } from './month-model';
+import { IData } from './month-model';
 
 export interface ITimekeeperStore {
   currentDate: Date;
-  days: IOutputModel;
+  data: IData;
 }
 
 export interface ITimeCalulatorStore {
