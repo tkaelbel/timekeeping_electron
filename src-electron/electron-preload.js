@@ -21,5 +21,5 @@ const { contextBridge, ipcRenderer } = require('electron');
 // Set up context bridge between the renderer process and the main process
 contextBridge.exposeInMainWorld('fileHandler', {
   readFile: (path) => ipcRenderer.invoke('fileHandler:readFile', path),
-  saveFile: (path) => ipcRenderer.invoke('fileHandler:saveFile', path),
+  writeFile: (path, data) => ipcRenderer.invoke('fileHandler:writeFile', path, data),
 });

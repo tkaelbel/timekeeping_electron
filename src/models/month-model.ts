@@ -1,23 +1,43 @@
-import { Ref, ComputedRef } from 'vue';
+import { Ref } from 'vue';
 
 export interface IWeekModel {
-  monday: IDayModel | undefined;
-  tuesday: IDayModel | undefined;
-  wednesday: IDayModel | undefined;
-  thursday: IDayModel | undefined;
-  friday: IDayModel | undefined;
-  saturday: IDayModel | undefined;
-  sunday: IDayModel | undefined;
-  [key: string]: IDayModel | undefined;
+  monday: IDayModelRef | undefined;
+  tuesday: IDayModelRef | undefined;
+  wednesday: IDayModelRef | undefined;
+  thursday: IDayModelRef | undefined;
+  friday: IDayModelRef | undefined;
+  saturday: IDayModelRef | undefined;
+  sunday: IDayModelRef | undefined;
+  [key: string]: IDayModelRef | undefined;
 }
 
-export interface IDayModel {
+export interface IDayModelRef {
   day: Date;
   hours: Ref<number>;
 }
 
-export interface IInputModel {
+export interface IDayModel {
+  day: Date;
+  hours: number;
+}
+
+export interface IOutputModel {
   [key: number]: {
     [key: string]: IDayModel;
   };
+}
+
+export interface IInputModel {
+  [key: number]: {
+    [key: string]: IDayModelRef;
+  };
+}
+
+export interface IData {
+  year: number;
+  months: IOutputMonth;
+}
+
+interface IOutputMonth {
+  [key: string]: IOutputModel;
 }

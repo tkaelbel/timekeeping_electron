@@ -33,6 +33,7 @@
               no-outline
               no-ripple
               rounded
+              @click="selectMonth(month)"
             ></q-btn>
           </div>
         </div>
@@ -59,13 +60,24 @@
             </q-card-section>
 
             <q-card-section class="q-pt-none">
-              Wochenarbeiszeit:
+              Wochenarbeiszeit: {{ configStore.weeklyHoursWorking }}
             </q-card-section>
 
             <q-separator inset />
 
-            <q-card-section> Urlaubstage: </q-card-section>
+            <q-card-section>
+              Urlaubstage: {{ configStore.yearlyVacationDays }}</q-card-section
+            >
           </q-card>
+        </div>
+
+        <div class="q-gutter-md column">
+          <q-btn
+            label="Speichern"
+            type="submit"
+            color="primary"
+            @click="onSave"
+          />
         </div>
       </div>
 
@@ -80,7 +92,7 @@
               <th class="text-center">Donnerstag</th>
               <th class="text-center">Freitag</th>
               <th class="text-center">Samstag</th>
-              <th class="text-center">Sonntags</th>
+              <th class="text-center">Sonntag</th>
               <th class="text-center">Woche</th>
               <th class="text-center">Überstunden</th>
             </tr>
@@ -102,7 +114,7 @@
                     class="day-input"
                     type="number"
                     filled
-                    v-model="inputValues[weekday].monday.hours"
+                    v-model="inputValues[weekday].monday.hours.value"
                   ></q-input>
                 </div>
               </td>
@@ -120,7 +132,7 @@
                     class="day-input"
                     type="number"
                     filled
-                    v-model="inputValues[weekday].tuesday.hours"
+                    v-model="inputValues[weekday].tuesday.hours.value"
                   ></q-input>
                 </div>
               </td>
@@ -138,7 +150,7 @@
                     class="day-input"
                     type="number"
                     filled
-                    v-model="inputValues[weekday].wednesday.hours"
+                    v-model="inputValues[weekday].wednesday.hours.value"
                   ></q-input>
                 </div>
               </td>
@@ -156,7 +168,7 @@
                     class="day-input"
                     type="number"
                     filled
-                    v-model="inputValues[weekday].thursday.hours"
+                    v-model="inputValues[weekday].thursday.hours.value"
                   ></q-input>
                 </div>
               </td>
@@ -174,7 +186,7 @@
                     class="day-input"
                     type="number"
                     filled
-                    v-model="inputValues[weekday].friday.hours"
+                    v-model="inputValues[weekday].friday.hours.value"
                   ></q-input>
                 </div>
               </td>
@@ -192,7 +204,7 @@
                     class="day-input"
                     type="number"
                     filled
-                    v-model="inputValues[weekday].saturday.hours"
+                    v-model="inputValues[weekday].saturday.hours.value"
                   ></q-input>
                 </div>
               </td>
@@ -210,7 +222,7 @@
                     class="day-input"
                     type="number"
                     filled
-                    v-model="inputValues[weekday].sunday.hours"
+                    v-model="inputValues[weekday].sunday.hours.value"
                   ></q-input>
                 </div>
               </td>
@@ -218,7 +230,11 @@
               <td class="text-center">
                 <div>{{ weekSums(weekday).toLocaleString('de-DE') }}</div>
               </td>
-              <td class="text-center"></td>
+              <td class="text-center">
+                <div>
+                  {{ calculateOvertime(weekday).toLocaleString('de-DE') }}
+                </div>
+              </td>
             </tr>
           </tbody>
         </q-markup-table>
@@ -227,43 +243,21 @@
   </q-page>
 </template>
 <script lang="ts">
-import {
-  defineComponent,
-  ref,
-  watchEffect,
-  watch,
-  computed,
-  reactive,
-} from 'vue';
-import {
-  getMonday,
-  getSunday,
-  getWeek,
-  getAllDaysOfMonth,
-} from 'src/services/date-utils';
-import { IInputModel } from 'src/models/month-model';
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access*/
+import { defineComponent, ref, computed, watch } from 'vue';
+import { IData, IInputModel, IOutputModel } from 'src/models/month-model';
+import { useConfigurationStore, useTimekeepingStore } from 'src/store/store';
+import { storeToRefs } from 'pinia';
+import { getAllDaysOfMonth } from 'src/services/date-utils';
+import { CustomWindow } from 'src/models/custom-window';
+
+declare const window: CustomWindow;
 
 export default defineComponent({
   name: 'Timekeeping',
   setup() {
-    const currentDate = ref(new Date());
-    const currentDateAsString = ref(currentDate.value.toDateString());
-    const monday = getMonday(currentDate.value);
-    const sunday = getSunday(currentDate.value);
-    const week = getWeek(monday, sunday);
-    const currentYear = currentDate.value.getFullYear();
-
-    //
-    // const selectedMonth = ref(currentDate.value.getMonth());
-
-    // const currentWeek = ref(new Date().get)
-
-    // watch(
-    //   currentDateAsString,
-    //   (currentDateAsString, prevCurrentDateAsString) => {
-    //     console.log(currentDateAsString);
-    //   }
-    // );
+    const { currentDate } = storeToRefs(useTimekeepingStore());
 
     const displayedMonths = computed(() => {
       const months: Date[] = [];
@@ -287,50 +281,149 @@ export default defineComponent({
       }
     };
 
-    const allDaysOfMonth = ref(getAllDaysOfMonth(currentDate.value));
-
-    const inputValues = ref<IInputModel>({});
-    allDaysOfMonth.value.forEach((value, index) => {
-      const days = Object.keys(value);
-      days.forEach((day) => {
-        const weekDay = value[day];
-
-        if (weekDay) {
-          if (!inputValues.value[index]) {
-            inputValues.value[index] = {
-              [day]: { day: weekDay.day, hours: 0 },
-            };
-          } else {
-            inputValues.value[index][day] = {
-              day: weekDay.day,
-              hours: 0,
-            };
-          }
-        }
-      });
+    const allDaysOfMonth = computed(() => {
+      return getAllDaysOfMonth(currentDate.value);
     });
 
-    const weekSums = (index: number) => {
+    // eslint-disable-next-line vue/no-async-in-computed-properties
+    const inputValues = computed(() => {
+      const inputValues: IInputModel = {};
+
+      allDaysOfMonth.value.forEach((value, index) => {
+        const days = Object.keys(value);
+        days.forEach((day) => {
+          const weekDay = value[day];
+
+          if (weekDay) {
+            if (!inputValues[index]) {
+              inputValues[index] = {
+                [day]: { day: weekDay.day, hours: ref(0) },
+              };
+            } else {
+              inputValues[index][day] = {
+                day: weekDay.day,
+                hours: ref(0),
+              };
+            }
+          }
+        });
+      });
+
+      return inputValues;
+    });
+
+    const loadData = async () => {
+      const year = currentDate.value.getFullYear();
+      const month = currentDate.value.toLocaleString('de-DE', {
+        month: 'short',
+      });
+
+      try {
+        const data = (await window?.fileHandler.readFile(
+          './data.json'
+        )) as string;
+
+        if (!data) return undefined;
+
+        const dataAsObj = JSON.parse(data) as IData;
+        if (!dataAsObj) return undefined;
+
+        //find data with date
+        if (dataAsObj.year === year && dataAsObj.months[month]) {
+          return dataAsObj.months[month];
+        }
+
+        return undefined;
+      } catch (error) {
+        console.error(error);
+        return undefined;
+      }
+    };
+
+    const weekSums = (cw: number) => {
       let weekSum = 0;
 
-      const wholeWeek = inputValues.value[index];
+      const wholeWeek = inputValues.value[cw];
       const keys = Object.keys(wholeWeek);
       keys.forEach((key) => {
-        weekSum += wholeWeek[key].hours
-          ? parseFloat(wholeWeek[key].hours as unknown as string)
+        weekSum += wholeWeek[key].hours.value
+          ? parseFloat(wholeWeek[key].hours.value as unknown as string)
           : 0;
       });
 
       return weekSum;
     };
 
+    const configStore = useConfigurationStore();
+
+    const calculateOvertime = (cw: number) => {
+      const weekSum = weekSums(cw);
+      return weekSum === 0 ? 0 : weekSum - configStore.weeklyHoursWorking;
+    };
+
+    //TODO: Gesamtüberstunden
+
+    //TODO: Urlaub
+
+    const selectMonth = (month: Date) => {
+      currentDate.value = month;
+    };
+
+    // watch(currentDate, (currentDate, previousDate) => {
+
+    // });
+
+    const onSave = async () => {
+      const date = currentDate.value;
+      const inputObj = inputValues.value;
+      const temp: IOutputModel = {};
+
+      Object.keys(inputObj).forEach((value: string) => {
+        const valueAsNumber = value as unknown as number;
+        Object.keys(inputObj[valueAsNumber]).forEach((secondValue: string) => {
+          if (!temp[valueAsNumber]) temp[valueAsNumber] = {};
+
+          temp[valueAsNumber][secondValue] = {
+            day: inputObj[valueAsNumber][secondValue].day,
+            hours: inputObj[valueAsNumber][secondValue].hours.value,
+          };
+        });
+      });
+
+      console.log(temp);
+
+      const output: IData = {
+        year: date.getFullYear(),
+        months: {
+          [date.toLocaleString('de-DE', { month: 'short' })]: temp,
+        },
+      };
+
+      try {
+        await window?.fileHandler.writeFile(
+          './data.json',
+          JSON.stringify(output)
+        );
+        console.log('Successfully saved data');
+      } catch (error) {
+        console.error(error);
+        console.log('Could not save data');
+      }
+
+      // console.log(output);
+    };
+
     return {
+      selectMonth,
+      calculateOvertime,
+      configStore,
       weekSums,
       inputValues,
       displayedMonths,
       changeYear,
       currentDate,
       allDaysOfMonth,
+      onSave,
     };
   },
 });

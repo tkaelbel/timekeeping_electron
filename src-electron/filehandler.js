@@ -1,5 +1,5 @@
 import { ipcMain } from 'electron';
-import { readFile, writeFile, readFileSync } from 'fs';
+import { writeFileSync, readFileSync } from 'fs';
 
 export function useFileHandler() {
 
@@ -8,6 +8,6 @@ export function useFileHandler() {
     });
 
     ipcMain.handle('fileHandler:writeFile', async (event, path, data) => {
-        return writeFile(path, data);
+        return writeFileSync(path, data);
     });
 };

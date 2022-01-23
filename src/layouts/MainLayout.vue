@@ -76,10 +76,11 @@
 
 import { defineComponent, ref, onMounted } from 'vue';
 import { CustomWindow } from 'src/models/custom-window';
-import { useConfigurationStore } from 'src/store/store';
+import { useConfigurationStore, useTimekeepingStore } from 'src/store/store';
 import { IConfigurationStore } from 'src/models/store-model';
+import { IOutputModel } from 'src/models/month-model';
 
-declare let window: CustomWindow;
+declare const window: CustomWindow;
 
 export default defineComponent({
   name: 'MainLayout',
@@ -88,6 +89,7 @@ export default defineComponent({
     const leftDrawerOpen = ref(false);
 
     const configurationStore = useConfigurationStore();
+    const timekeeperStore = useTimekeepingStore();
 
     onMounted(async () => {
       // here we need to load the configuration file and also date existing files
@@ -105,6 +107,23 @@ export default defineComponent({
         ) as IConfigurationStore;
         configurationStore.yearlyVacationDays = yearlyVacationDays;
         configurationStore.weeklyHoursWorking = weeklyHoursWorking;
+      } catch (error) {
+        console.error(
+          'Could not load configuration.json. Defaults will be used'
+        );
+      }
+
+      try {
+        const file = (await window?.fileHandler.readFile(
+          './data.json'
+        )) as string;
+
+        console.debug('Loaded data.json successfully');
+        console.log(file);
+
+        // set configuration state
+        const data = JSON.parse(file) as IOutputModel;
+        timekeeperStore.days = data;
       } catch (error) {
         console.error(
           'Could not load configuration.json. Defaults will be used'

@@ -1,16 +1,17 @@
-export interface IStore {
-    weeklyWorkHours: number;
-    yearlyVacationDays: number;
+import { IWeekModel, IOutputModel } from './month-model';
 
+export interface ITimekeeperStore {
+  currentDate: Date;
+  days: IOutputModel;
 }
 
 export interface ITimeCalulatorStore {
-    startTime: string;
-    breakTime: string;
-    endTime: string;
+  startTime: string;
+  breakTime: string;
+  endTime: string;
 }
 
 export interface IConfigurationStore {
-    weeklyHoursWorking: number;
-    yearlyVacationDays: number;
+  weeklyHoursWorking: number;
+  yearlyVacationDays: number;
 }

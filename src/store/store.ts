@@ -1,13 +1,9 @@
 import {
   ITimeCalulatorStore,
   IConfigurationStore,
+  ITimekeeperStore,
 } from './../models/store-model';
 import { defineStore } from 'pinia';
-import { IStore } from '../models/store-model';
-
-export const useStore = defineStore('main', {
-  state: () => ({ weeklyWorkHours: 0, yearlyVacationDays: 0 } as IStore),
-});
 
 export const useTimeCalculatorStore = defineStore('timeCalculator', {
   state: () =>
@@ -24,4 +20,12 @@ export const useConfigurationStore = defineStore('configurationStore', {
       yearlyVacationDays: 30,
       weeklyHoursWorking: 39,
     } as IConfigurationStore),
+});
+
+export const useTimekeepingStore = defineStore('timekeepingStore', {
+  state: () =>
+    ({
+    currentDate: new Date(),
+    days: undefined
+  } as unknown as ITimekeeperStore),
 });

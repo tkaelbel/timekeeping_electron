@@ -6,7 +6,7 @@
           type="text"
           filled
           v-model="store.weeklyHoursWorking"
-          label="Weekly working hours"
+          label="Wochenarbeitszeit (Stunden)"
           style="width: 250px; padding-bottom: 32px"
           mask="###"
         />
@@ -15,14 +15,14 @@
           type="text"
           filled
           v-model="store.yearlyVacationDays"
-          label="Yearly vacation days"
+          label="Urlaubstage"
           style="width: 250px; padding-bottom: 32px"
           mask="###"
         />
 
         <div>
           <q-btn
-            label="Apply configuration"
+            label="Speichern"
             type="submit"
             color="primary"
             @click="onApply"
@@ -34,17 +34,41 @@
 </template>
 
 <script lang="ts">
-import { useConfigurationStore } from "src/store/store";
-import { defineComponent, ref } from "vue";
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access*/
+
+import { CustomWindow } from 'src/models/custom-window';
+import { useConfigurationStore } from 'src/store/store';
+import { defineComponent } from 'vue';
+
+declare const window: CustomWindow;
 
 export default defineComponent({
-  name: "Configuration",
+  name: 'Configuration',
   setup() {
     const store = useConfigurationStore();
 
-    const onApply = () => {
-      console.log("hello");
+    const onApply = async () => {
+      try {
+        const { yearlyVacationDays, weeklyHoursWorking } = store;
+        const output = JSON.stringify({
+          weeklyHoursWorking,
+          yearlyVacationDays,
+        });
+
+        await window?.fileHandler.writeFile('./configuration.json', output);
+
+        console.debug('Wrote configuration.json successfully');
+      } catch (error) {
+        console.error('Could not write configuration.json.');
+      }
     };
+
+    // TODO: automatic save
+
+    // setTimeout(() async => {
+    //   await onApply();
+    // }, 5000);
 
     return {
       store,
