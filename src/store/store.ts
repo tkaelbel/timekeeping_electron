@@ -4,6 +4,7 @@ import {
   ITimekeeperStore,
 } from './../models/store-model';
 import { defineStore } from 'pinia';
+import { IDayModel } from 'src/models/month-model';
 
 export const useTimeCalculatorStore = defineStore('timeCalculator', {
   state: () =>
@@ -29,32 +30,41 @@ export const useTimekeepingStore = defineStore('timekeepingStore', {
       data: {},
     } as ITimekeeperStore),
   getters: {
-    getOverallOvertimeHours() {
-      const weeklyHours = useConfigurationStore().weeklyHoursWorking;
-      const years = Object.keys(this.data);
+    calculateOverallOvertime() {
+      const overallData = this.data;
 
-      let overtimeHours = 0;
-      let weeks: { [key: number]: number } = {};
+      let overallOvertime = 0;
 
-      years.forEach((year: string) => {
-        const months = this.data[year as unknown as number];
-        Object.keys(months).forEach((month: string) => {
+      const keyYears = Object.keys(overallData);
+      keyYears.forEach((year: string) => {
+        const months = overallData[year as unknown as number];
+        const keyMonths = Object.keys(months);
+        keyMonths.forEach((month: string) => {
           const cws = months[month];
-          Object.keys(cws).forEach((cw: string) => {
-            const days = cws[cw as unknown as number];
-            Object.keys(days).forEach((day: string) => {
-              const dayObj = days[day];
-
-              overtimeHours = overtimeHours + dayObj.hours;
-              if (dayObj.hours > 0) {
-                weeks[cw as unknown as number] = 1;
-              }
-            });
+          const keyCws = Object.keys(cws);
+          keyCws.forEach((cw: string) => {
+            const cwData = cws[cw as unknown as number];
+            overallOvertime = overallOvertime + calculateWeekOvertime(cwData);
           });
         });
       });
 
-      return overtimeHours;
+      return overallOvertime;
     },
   },
 });
+
+const calculateWeekOvertime = (cw: { [key: string]: IDayModel }) => {
+  let weekSum = 0;
+
+  const dayKeys = Object.keys(cw);
+  dayKeys.forEach((day: string) => {
+    weekSum += cw[day].hours
+      ? parseFloat(cw[day].hours as unknown as string)
+      : 0;
+  });
+
+  return weekSum === 0
+    ? 0
+    : weekSum - useConfigurationStore().weeklyHoursWorking;
+};

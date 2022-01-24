@@ -45,29 +45,20 @@
             </q-card-section>
 
             <q-card-section class="q-pt-none">
-              Gesamtüberstunden:
+              Wochenarbeiszeit Soll: {{ configStore.weeklyHoursWorking }}
             </q-card-section>
-
-            <q-separator inset />
-
-            <q-card-section> Urlaubstage Rest: </q-card-section>
-          </q-card>
-        </div>
-        <div class="q-gutter-md column">
-          <q-card class="my-card">
-            <q-card-section>
-              <div class="text-h6">Konfiguration</div>
-            </q-card-section>
-
-            <q-card-section class="q-pt-none">
-              Wochenarbeiszeit: {{ configStore.weeklyHoursWorking }}
-            </q-card-section>
-
-            <q-separator inset />
 
             <q-card-section>
               Urlaubstage: {{ configStore.yearlyVacationDays }}</q-card-section
             >
+
+            <q-card-section>
+              Gesamtüberstunden: {{ calculateOverallOvertime }}
+            </q-card-section>
+
+            <q-card-section> Urlaubstage Rest: </q-card-section>
+
+            <q-card-section> Kranktage: </q-card-section>
           </q-card>
         </div>
 
@@ -98,7 +89,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="weekday in allDaysOfMonth.keys()" :key="weekday">
+            <tr v-for="weekday in allDaysOfMonth.keys()" :key="weekday" >
               <td class="text-left">{{ weekday }}</td>
               <td class="text-center">
                 <div v-if="allDaysOfMonth.get(weekday)?.monday?.day">
@@ -112,9 +103,16 @@
                   }}
                   <q-input
                     class="day-input"
-                    type="number"
+                    type="text"
                     filled
                     v-model="inputValues[weekday].monday.hours"
+                    :rules="[
+                      (val) =>
+                        val === 'U' ||
+                        val === 'K' ||
+                        !Number.isNaN(parseFloat(val)) ||
+                        'Zahl/U/K',
+                    ]"
                   ></q-input>
                 </div>
               </td>
@@ -133,6 +131,13 @@
                     type="number"
                     filled
                     v-model="inputValues[weekday].tuesday.hours"
+                    :rules="[
+                      (val) =>
+                        val === 'U' ||
+                        val === 'K' ||
+                        !Number.isNaN(parseFloat(val)) ||
+                        'Zahl/U/K',
+                    ]"
                   ></q-input>
                 </div>
               </td>
@@ -151,6 +156,13 @@
                     type="number"
                     filled
                     v-model="inputValues[weekday].wednesday.hours"
+                    :rules="[
+                      (val) =>
+                        val === 'U' ||
+                        val === 'K' ||
+                        !Number.isNaN(parseFloat(val)) ||
+                        'Zahl/U/K',
+                    ]"
                   ></q-input>
                 </div>
               </td>
@@ -169,6 +181,13 @@
                     type="number"
                     filled
                     v-model="inputValues[weekday].thursday.hours"
+                    :rules="[
+                      (val) =>
+                        val === 'U' ||
+                        val === 'K' ||
+                        !Number.isNaN(parseFloat(val)) ||
+                        'Zahl/U/K',
+                    ]"
                   ></q-input>
                 </div>
               </td>
@@ -187,6 +206,13 @@
                     type="number"
                     filled
                     v-model="inputValues[weekday].friday.hours"
+                    :rules="[
+                      (val) =>
+                        val === 'U' ||
+                        val === 'K' ||
+                        !Number.isNaN(parseFloat(val)) ||
+                        'Zahl/U/K',
+                    ]"
                   ></q-input>
                 </div>
               </td>
@@ -205,6 +231,13 @@
                     type="number"
                     filled
                     v-model="inputValues[weekday].saturday.hours"
+                    :rules="[
+                      (val) =>
+                        val === 'U' ||
+                        val === 'K' ||
+                        !Number.isNaN(parseFloat(val)) ||
+                        'Zahl/U/K',
+                    ]"
                   ></q-input>
                 </div>
               </td>
@@ -223,6 +256,13 @@
                     type="number"
                     filled
                     v-model="inputValues[weekday].sunday.hours"
+                    :rules="[
+                      (val) =>
+                        val === 'U' ||
+                        val === 'K' ||
+                        !Number.isNaN(parseFloat(val)) ||
+                        'Zahl/U/K',
+                    ]"
                   ></q-input>
                 </div>
               </td>
@@ -256,7 +296,9 @@ declare const window: CustomWindow;
 export default defineComponent({
   name: 'Timekeeping',
   setup() {
-    const { currentDate, data } = storeToRefs(useTimekeepingStore());
+    const { currentDate, data, calculateOverallOvertime } = storeToRefs(
+      useTimekeepingStore()
+    );
 
     const displayedMonths = computed(() => {
       const months: Date[] = [];
@@ -334,6 +376,8 @@ export default defineComponent({
       let weekSum = 0;
 
       const wholeWeek = inputValues.value[cw];
+      if (!wholeWeek) return weekSum;
+
       const keys = Object.keys(wholeWeek);
       keys.forEach((key) => {
         weekSum += wholeWeek[key].hours
@@ -351,14 +395,6 @@ export default defineComponent({
       return weekSum === 0 ? 0 : weekSum - configStore.weeklyHoursWorking;
     };
 
-    //TODO: Gesamtüberstunden
-
-    const calculateOverallOvertime = () => {
-      const overallData = data.value;
-
-      
-    };
-
     //TODO: Urlaub
 
     const selectMonth = (month: Date) => {
@@ -366,6 +402,10 @@ export default defineComponent({
     };
 
     const onSave = async () => {
+
+      // TODO: check if we have wrong input
+
+
       try {
         await window?.fileHandler.writeFile(
           './data.json',
@@ -389,13 +429,15 @@ export default defineComponent({
       currentDate,
       allDaysOfMonth,
       onSave,
+      calculateOverallOvertime,
     };
   },
 });
 </script>
 <style lang="scss">
 .day-input {
-  width: 80px;
+  width: 80px !important;
+  height: 70px !important;
 }
 
 .flex-break {
