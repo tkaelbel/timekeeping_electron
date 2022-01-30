@@ -49,16 +49,16 @@
             </q-card-section>
 
             <q-card-section>
+              Gesamtüberstunden: {{ calculateOverallOvertime }}
+            </q-card-section>
+
+            <q-card-section>
               Urlaubstage: {{ configStore.yearlyVacationDays }}</q-card-section
             >
 
             <q-card-section>
-              Gesamtüberstunden: {{ calculateOverallOvertime }}
-            </q-card-section>
-
-            <q-card-section> Urlaubstage Rest: </q-card-section>
-
-            <q-card-section> Kranktage: </q-card-section>
+              Urlaubstage Rest: {{ calculateRestVactionDays }}</q-card-section
+            >
           </q-card>
         </div>
 
@@ -89,7 +89,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="weekday in allDaysOfMonth.keys()" :key="weekday" >
+            <tr v-for="weekday in allDaysOfMonth.keys()" :key="weekday">
               <td class="text-left">{{ weekday }}</td>
               <td class="text-center">
                 <div v-if="allDaysOfMonth.get(weekday)?.monday?.day">
@@ -101,19 +101,22 @@
                         month: '2-digit',
                       })
                   }}
-                  <q-input
-                    class="day-input"
-                    type="text"
-                    filled
-                    v-model="inputValues[weekday].monday.hours"
-                    :rules="[
-                      (val) =>
-                        val === 'U' ||
-                        val === 'K' ||
-                        !Number.isNaN(parseFloat(val)) ||
-                        'Zahl/U/K',
-                    ]"
-                  ></q-input>
+                  <div class="q-gutter-md row">
+                    <q-input
+                      class="day-input"
+                      type="number"
+                      filled
+                      v-model="inputValues[weekday].monday.hours"
+                    >
+                      <q-checkbox
+                        dense
+                        size="xs"
+                        v-model="inputValues[weekday].monday.vacation"
+                        label="U"
+                      >
+                      </q-checkbox>
+                    </q-input>
+                  </div>
                 </div>
               </td>
               <td class="text-center">
@@ -131,13 +134,6 @@
                     type="number"
                     filled
                     v-model="inputValues[weekday].tuesday.hours"
-                    :rules="[
-                      (val) =>
-                        val === 'U' ||
-                        val === 'K' ||
-                        !Number.isNaN(parseFloat(val)) ||
-                        'Zahl/U/K',
-                    ]"
                   ></q-input>
                 </div>
               </td>
@@ -156,13 +152,6 @@
                     type="number"
                     filled
                     v-model="inputValues[weekday].wednesday.hours"
-                    :rules="[
-                      (val) =>
-                        val === 'U' ||
-                        val === 'K' ||
-                        !Number.isNaN(parseFloat(val)) ||
-                        'Zahl/U/K',
-                    ]"
                   ></q-input>
                 </div>
               </td>
@@ -181,13 +170,6 @@
                     type="number"
                     filled
                     v-model="inputValues[weekday].thursday.hours"
-                    :rules="[
-                      (val) =>
-                        val === 'U' ||
-                        val === 'K' ||
-                        !Number.isNaN(parseFloat(val)) ||
-                        'Zahl/U/K',
-                    ]"
                   ></q-input>
                 </div>
               </td>
@@ -206,13 +188,6 @@
                     type="number"
                     filled
                     v-model="inputValues[weekday].friday.hours"
-                    :rules="[
-                      (val) =>
-                        val === 'U' ||
-                        val === 'K' ||
-                        !Number.isNaN(parseFloat(val)) ||
-                        'Zahl/U/K',
-                    ]"
                   ></q-input>
                 </div>
               </td>
@@ -231,13 +206,6 @@
                     type="number"
                     filled
                     v-model="inputValues[weekday].saturday.hours"
-                    :rules="[
-                      (val) =>
-                        val === 'U' ||
-                        val === 'K' ||
-                        !Number.isNaN(parseFloat(val)) ||
-                        'Zahl/U/K',
-                    ]"
                   ></q-input>
                 </div>
               </td>
@@ -256,13 +224,6 @@
                     type="number"
                     filled
                     v-model="inputValues[weekday].sunday.hours"
-                    :rules="[
-                      (val) =>
-                        val === 'U' ||
-                        val === 'K' ||
-                        !Number.isNaN(parseFloat(val)) ||
-                        'Zahl/U/K',
-                    ]"
                   ></q-input>
                 </div>
               </td>
@@ -296,9 +257,13 @@ declare const window: CustomWindow;
 export default defineComponent({
   name: 'Timekeeping',
   setup() {
-    const { currentDate, data, calculateOverallOvertime } = storeToRefs(
-      useTimekeepingStore()
-    );
+    const {
+      currentDate,
+      data,
+      calculateOverallOvertime,
+      calculateRestVactionDays,
+    } = storeToRefs(useTimekeepingStore());
+    const configStore = useConfigurationStore();
 
     const displayedMonths = computed(() => {
       const months: Date[] = [];
@@ -356,12 +321,13 @@ export default defineComponent({
             if (weekDay) {
               if (!month[index]) {
                 month[index] = {
-                  [day]: { day: weekDay.day, hours: 0 },
+                  [day]: { day: weekDay.day, hours: 0, vacation: false },
                 };
               } else {
                 month[index][day] = {
                   day: weekDay.day,
                   hours: 0,
+                  vacation: false,
                 };
               }
             }
@@ -388,24 +354,16 @@ export default defineComponent({
       return weekSum;
     };
 
-    const configStore = useConfigurationStore();
-
     const calculateOvertime = (cw: number) => {
       const weekSum = weekSums(cw);
       return weekSum === 0 ? 0 : weekSum - configStore.weeklyHoursWorking;
     };
-
-    //TODO: Urlaub
 
     const selectMonth = (month: Date) => {
       currentDate.value = month;
     };
 
     const onSave = async () => {
-
-      // TODO: check if we have wrong input
-
-
       try {
         await window?.fileHandler.writeFile(
           './data.json',
@@ -430,13 +388,24 @@ export default defineComponent({
       allDaysOfMonth,
       onSave,
       calculateOverallOvertime,
+      calculateRestVactionDays,
     };
   },
 });
 </script>
 <style lang="scss">
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.q-field__append {
+  display: none;
+}
+
 .day-input {
-  width: 80px !important;
+  width: 100px !important;
   height: 70px !important;
 }
 

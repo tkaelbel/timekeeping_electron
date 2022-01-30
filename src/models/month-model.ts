@@ -19,6 +19,7 @@ export interface IDayModelRef {
 export interface IDayModel {
   day: Date;
   hours: number;
+  vacation: boolean,
 }
 
 export interface IWeek {
