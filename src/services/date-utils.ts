@@ -1,6 +1,7 @@
 import { IWeekModel } from './../models/month-model';
 import { ref } from 'vue';
 
+
 const getAllDaysOfMonth = (date: Date) => {
   const tempDate = new Date(date.getFullYear(), date.getMonth(), 1);
   const allDays: Map<number, IWeekModel> = new Map();
@@ -49,6 +50,4 @@ const getWeekNumber = (date: Date) => {
   return 1 + Math.ceil((firstThursday - tdt.valueOf()) / 604800000);
 };
 
-export {
-  getAllDaysOfMonth,
-};
+export { getAllDaysOfMonth };

@@ -113,8 +113,8 @@
                         size="xs"
                         v-model="inputValues[weekday].monday.vacation"
                         label="U"
-                      >
-                      </q-checkbox>
+                        class="text-secondary text-weight-bold"
+                      />
                     </q-input>
                   </div>
                 </div>
@@ -134,7 +134,15 @@
                     type="number"
                     filled
                     v-model="inputValues[weekday].tuesday.hours"
-                  ></q-input>
+                  >
+                    <q-checkbox
+                      dense
+                      size="xs"
+                      v-model="inputValues[weekday].tuesday.vacation"
+                      label="U"
+                      class="text-secondary text-weight-bold"
+                    />
+                  </q-input>
                 </div>
               </td>
               <td class="text-center">
@@ -152,7 +160,15 @@
                     type="number"
                     filled
                     v-model="inputValues[weekday].wednesday.hours"
-                  ></q-input>
+                  >
+                    <q-checkbox
+                      dense
+                      size="xs"
+                      v-model="inputValues[weekday].wednesday.vacation"
+                      label="U"
+                      class="text-secondary text-weight-bold"
+                    />
+                  </q-input>
                 </div>
               </td>
               <td class="text-center">
@@ -170,7 +186,15 @@
                     type="number"
                     filled
                     v-model="inputValues[weekday].thursday.hours"
-                  ></q-input>
+                  >
+                    <q-checkbox
+                      dense
+                      size="xs"
+                      v-model="inputValues[weekday].thursday.vacation"
+                      label="U"
+                      class="text-secondary text-weight-bold"
+                    />
+                  </q-input>
                 </div>
               </td>
               <td class="text-center">
@@ -188,7 +212,15 @@
                     type="number"
                     filled
                     v-model="inputValues[weekday].friday.hours"
-                  ></q-input>
+                  >
+                    <q-checkbox
+                      dense
+                      size="xs"
+                      v-model="inputValues[weekday].friday.vacation"
+                      label="U"
+                      class="text-secondary text-weight-bold"
+                    />
+                  </q-input>
                 </div>
               </td>
               <td class="text-center">
@@ -206,7 +238,15 @@
                     type="number"
                     filled
                     v-model="inputValues[weekday].saturday.hours"
-                  ></q-input>
+                  >
+                    <q-checkbox
+                      dense
+                      size="xs"
+                      v-model="inputValues[weekday].saturday.vacation"
+                      label="U"
+                      class="text-secondary text-weight-bold"
+                    />
+                  </q-input>
                 </div>
               </td>
               <td class="text-center">
@@ -224,7 +264,15 @@
                     type="number"
                     filled
                     v-model="inputValues[weekday].sunday.hours"
-                  ></q-input>
+                  >
+                    <q-checkbox
+                      dense
+                      size="xs"
+                      v-model="inputValues[weekday].sunday.vacation"
+                      label="U"
+                      class="text-secondary text-weight-bold"
+                    />
+                  </q-input>
                 </div>
               </td>
 
@@ -241,20 +289,20 @@
         </q-markup-table>
       </div>
     </div>
+    <popup :show="isShown" :message="text" :is-positive="isPositive"></popup>
   </q-page>
 </template>
 <script lang="ts">
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access*/
-import { defineComponent, computed } from 'vue';
+import { defineComponent, computed, ref } from 'vue';
 import { useConfigurationStore, useTimekeepingStore } from 'src/store/store';
 import { storeToRefs } from 'pinia';
 import { getAllDaysOfMonth } from 'src/services/date-utils';
-import { CustomWindow } from 'src/models/custom-window';
 
-declare const window: CustomWindow;
+import Popup from 'components/Popup.vue';
+import { showPopup } from 'src/services/utils';
 
 export default defineComponent({
+  components: { Popup },
   name: 'Timekeeping',
   setup() {
     const {
@@ -263,7 +311,14 @@ export default defineComponent({
       calculateOverallOvertime,
       calculateRestVactionDays,
     } = storeToRefs(useTimekeepingStore());
+
+    const timeKeeperStore = useTimekeepingStore();
+
     const configStore = useConfigurationStore();
+
+    const isShown = ref(false);
+    const text = ref('Gespeichert');
+    const isPositive = ref(true);
 
     const displayedMonths = computed(() => {
       const months: Date[] = [];
@@ -365,14 +420,11 @@ export default defineComponent({
 
     const onSave = async () => {
       try {
-        await window?.fileHandler.writeFile(
-          './data.json',
-          JSON.stringify(data.value)
-        );
-        console.log('Successfully saved data');
+        await timeKeeperStore.saveData();
+        showPopup(isShown, text, isPositive);
       } catch (error) {
-        console.error(error);
-        console.log('Could not save data');
+        console.error('Could not write configuration.json.');
+        showPopup(isShown, text, isPositive, 'Nicht gespeichert', false);
       }
     };
 
@@ -389,6 +441,9 @@ export default defineComponent({
       onSave,
       calculateOverallOvertime,
       calculateRestVactionDays,
+      isShown,
+      text,
+      isPositive,
     };
   },
 });
@@ -422,6 +477,7 @@ input[type='number']::-webkit-inner-spin-button {
 }
 
 .monthpicker-header {
+  font-weight: bold;
   align-items: center;
   display: flex;
   justify-content: space-between;

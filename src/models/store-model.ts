@@ -14,4 +14,6 @@ export interface ITimeCalulatorStore {
 export interface IConfigurationStore {
   weeklyHoursWorking: number;
   yearlyVacationDays: number;
+  isAutoSave: boolean;
+  autoSaveTimeSeconds: number;
 }

@@ -5,6 +5,9 @@ import {
 } from './../models/store-model';
 import { defineStore } from 'pinia';
 import { IData, IDayModel } from 'src/models/month-model';
+import { CustomWindow } from 'src/models/custom-window';
+
+declare const window: CustomWindow;
 
 export const useTimeCalculatorStore = defineStore('timeCalculator', {
   state: () =>
@@ -20,7 +23,37 @@ export const useConfigurationStore = defineStore('configurationStore', {
     ({
       yearlyVacationDays: 30,
       weeklyHoursWorking: 39,
+      isAutoSave: false,
+      autoSaveTimeSeconds: 15,
     } as IConfigurationStore),
+  getters: {
+    convertAutoSaveTimeToSeconds(): number {
+      return this.autoSaveTimeSeconds * 1000;
+    },
+  },
+  actions: {
+    async saveConfiguration() {
+      try {
+        const {
+          yearlyVacationDays,
+          weeklyHoursWorking,
+          isAutoSave,
+          autoSaveTimeSeconds,
+        } = this;
+        const output = JSON.stringify({
+          weeklyHoursWorking,
+          yearlyVacationDays,
+          isAutoSave,
+          autoSaveTimeSeconds,
+        });
+        await window?.fileHandler.writeFile('./configuration.json', output);
+        console.debug('Wrote configuration.json successfully');
+      } catch (error) {
+        console.error(error);
+        throw error;
+      }
+    },
+  },
 });
 
 export const useTimekeepingStore = defineStore('timekeepingStore', {
@@ -29,6 +62,21 @@ export const useTimekeepingStore = defineStore('timekeepingStore', {
       currentDate: new Date(),
       data: {},
     } as ITimekeeperStore),
+  actions: {
+    async saveData() {
+      const { data } = this;
+      try {
+        await window?.fileHandler.writeFile(
+          './data.json',
+          JSON.stringify(data)
+        );
+        console.log('Successfully saved data');
+      } catch (error) {
+        console.error(error);
+        throw error;
+      }
+    },
+  },
   getters: {
     calculateOverallOvertime() {
       const { calculatedWeekOvertime } = calculateAdditionalInfos(this.data);

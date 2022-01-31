@@ -20,6 +20,15 @@
           mask="###"
         />
 
+        <q-input
+          type="text"
+          filled
+          v-model="store.autoSaveTimeSeconds"
+          label="Auto. Speichern (Sekunden)"
+          style="width: 250px; padding-bottom: 32px"
+          mask="#####"
+        />
+
         <div>
           <q-btn
             label="Speichern"
@@ -31,49 +40,44 @@
       </div>
     </div>
   </q-page>
+
+  <popup :show="isShown" :message="text" :is-positive="isPositive"></popup>
 </template>
 
 <script lang="ts">
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access*/
-
-import { CustomWindow } from 'src/models/custom-window';
 import { useConfigurationStore } from 'src/store/store';
-import { defineComponent } from 'vue';
+import { defineComponent, ref } from 'vue';
+import { showPopup } from 'src/services/utils';
 
-declare const window: CustomWindow;
+import Popup from 'components/Popup.vue';
 
 export default defineComponent({
   name: 'Configuration',
   setup() {
     const store = useConfigurationStore();
 
+    const isShown = ref(false);
+    const text = ref('Gespeichert');
+    const isPositive = ref(true);
+
     const onApply = async () => {
       try {
-        const { yearlyVacationDays, weeklyHoursWorking } = store;
-        const output = JSON.stringify({
-          weeklyHoursWorking,
-          yearlyVacationDays,
-        });
-
-        await window?.fileHandler.writeFile('./configuration.json', output);
-
-        console.debug('Wrote configuration.json successfully');
+        await store.saveConfiguration();
+        showPopup(isShown, text, isPositive);
       } catch (error) {
         console.error('Could not write configuration.json.');
+        showPopup(isShown, text, isPositive, 'Nicht gespeichert', false);
       }
     };
-
-    // TODO: automatic save
-
-    // setTimeout(() async => {
-    //   await onApply();
-    // }, 5000);
 
     return {
       store,
       onApply,
+      isShown,
+      text,
+      isPositive,
     };
   },
+  components: { Popup },
 });
 </script>
