@@ -411,6 +411,16 @@ export default defineComponent({
 
     const calculateOvertime = (cw: number) => {
       const weekSum = weekSums(cw);
+      const wholeWeek = inputValues.value[cw];
+      if (wholeWeek) {
+        const keys = Object.keys(wholeWeek);
+        if (keys.length < 5) {
+          return weekSum === 0
+            ? 0
+            : weekSum - (configStore.weeklyHoursWorking / 5) * keys.length;
+        }
+      }
+
       return weekSum === 0 ? 0 : weekSum - configStore.weeklyHoursWorking;
     };
 

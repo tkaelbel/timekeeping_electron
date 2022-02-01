@@ -140,10 +140,22 @@ const calculateWeek = (cw: { [key: string]: IDayModel }) => {
         ? parseFloat(cw[day].hours as unknown as string)
         : 0;
     }
+
     weekSumOvertime += cw[day].hours
       ? parseFloat(cw[day].hours as unknown as string)
       : 0;
   });
+
+  if (dayKeys.length < 5) {
+    return {
+      weekSumOvertime:
+        weekSumOvertime === 0
+          ? 0
+          : weekSumOvertime -
+            (useConfigurationStore().weeklyHoursWorking / 5) * dayKeys.length,
+      weekSumVacation,
+    };
+  }
 
   return {
     weekSumOvertime:
