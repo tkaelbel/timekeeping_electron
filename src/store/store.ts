@@ -146,13 +146,15 @@ const calculateWeek = (cw: { [key: string]: IDayModel }) => {
       : 0;
   });
 
-  if (dayKeys.length < 5) {
+  const daysWithoutWeekend = dayKeys.filter((day) => day !== 'sunday' && day !== 'saturday');
+
+  if (daysWithoutWeekend.length < 5) {
     return {
       weekSumOvertime:
         weekSumOvertime === 0
           ? 0
           : weekSumOvertime -
-            (useConfigurationStore().weeklyHoursWorking / 5) * dayKeys.length,
+            (useConfigurationStore().weeklyHoursWorking / 5) * daysWithoutWeekend.length,
       weekSumVacation,
     };
   }

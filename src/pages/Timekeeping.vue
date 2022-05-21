@@ -413,11 +413,12 @@ export default defineComponent({
       const weekSum = weekSums(cw);
       const wholeWeek = inputValues.value[cw];
       if (wholeWeek) {
-        const keys = Object.keys(wholeWeek);
-        if (keys.length < 5) {
+
+        const daysWithoutWeekend = Object.keys(wholeWeek).filter((day) => day !== 'sunday' && day !== 'saturday');
+        if (daysWithoutWeekend.length < 5) {
           return weekSum === 0
             ? 0
-            : weekSum - (configStore.weeklyHoursWorking / 5) * keys.length;
+            : weekSum - (configStore.weeklyHoursWorking / 5) * daysWithoutWeekend.length;
         }
       }
 
